@@ -223,7 +223,7 @@ export default function Calendario() {
       const inicio = e.hora ? `DTSTART:${data}T${e.hora.replace(":", "")}00` : `DTSTART;VALUE=DATE:${data}`;
       return ["BEGIN:VEVENT", `UID:${e.id}@niko`, `DTSTAMP:${agora}`, inicio, `SUMMARY:${escaparIcs(e.titulo)}`, regra[e.repeticao], "END:VEVENT"].filter(Boolean).join("\r\n");
     });
-    baixarArquivo("niko-calendario.ics", ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Niko//PT-BR", ...corpo, "END:VCALENDAR"].join("\r\n"), "text/calendar");
+    baixarArquivo("ada-calendario.ics", ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ADA//PT-BR", ...corpo, "END:VCALENDAR"].join("\r\n"), "text/calendar");
   };
 
   const importarIcs = async (arquivo: File) => {

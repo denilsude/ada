@@ -3,17 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0e0e10" />
+    <meta name="description" content="Sistema pessoal de organização e produtividade." />
     <title>ADA</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <style>
-      .carregando-niko { position: fixed; inset: 0; display: grid; place-items: center; background: #0e0e10; }
-      .carregando-niko img { width: 76px; height: 76px; animation: respirar-niko 1.6s ease-in-out infinite; }
-      @keyframes respirar-niko { 0%, 100% { transform: scale(0.94); opacity: 0.75; } 50% { transform: scale(1); opacity: 1; } }
-      html.janela-sobreposta .carregando-niko { display: none; }
+      .carregando-ada { position: fixed; inset: 0; display: grid; place-items: center; background: #0e0e10; }
+      .carregando-ada img { width: 76px; height: 76px; animation: respirar-ada 1.6s ease-in-out infinite; }
+      @keyframes respirar-ada { 0%, 100% { transform: scale(0.94); opacity: 0.75; } 50% { transform: scale(1); opacity: 1; } }
+      html.janela-sobreposta .carregando-ada { display: none; }
     </style>
   </head>
   <body>
-    <div id="raiz"><div class="carregando-niko" aria-busy="true"><img src="/favicon.svg" alt="ADA" /></div></div>
+    <div id="raiz"><div class="carregando-ada" aria-busy="true"><img src="/favicon.svg" alt="ADA" /></div></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

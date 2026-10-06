@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "padrao",
-  "description": "Permissões das janelas do Niko",
+  "description": "Permissões das janelas do ADA",
   "windows": ["sistema"],
   "permissions": [
     "core:default",

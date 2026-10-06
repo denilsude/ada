@@ -34,8 +34,8 @@ export function LogoNiko({ tamanho = 28, brilho }: { tamanho?: number; brilho?: 
       <rect x="4" y="4" width="92" height="92" rx="25" fill={`url(#f-${id})`} />
       <rect x="4" y="4" width="92" height="92" rx="25" fill={`url(#r-${id})`} />
       <rect x="4.75" y="4.75" width="90.5" height="90.5" rx="24.25" fill="none" stroke={`url(#b-${id})`} strokeWidth="1.5" />
-      <path d="M34.5 64 V37.5 L65 64 V52" fill="none" stroke="#f4f4f5" strokeWidth="10.5" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="66" cy="38" r="6" fill={`url(#p-${id})`} />
+      <path d="M29 70 50 30 71 70M39 53h22" fill="none" stroke="#f4f4f5" strokeWidth="10.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="66" cy="44" r="6" fill={`url(#p-${id})`} />
     </svg>
   );
 }

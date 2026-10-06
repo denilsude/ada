@@ -275,7 +275,7 @@ pub fn run() {
             Ok(())
         })
         .build(tauri::generate_context!())
-        .expect("falha ao iniciar o Niko");
+        .expect("falha ao iniciar o ADA");
 
     app.run(|handle, evento| {
         if let RunEvent::Exit = evento {

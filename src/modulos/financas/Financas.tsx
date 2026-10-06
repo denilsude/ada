@@ -1315,7 +1315,7 @@ function Relatorios({ mes, modo }: { mes: string; modo: Modo }) {
       .slice()
       .sort((a, b) => a.data.localeCompare(b.data))
       .map((t) => [t.data, T.financas.tipos[t.tipo], `"${t.descricao.replace(/"/g, "'")}"`, nomeCategoria(t.categoriaId, fin.categorias), fin.contas.find((c) => c.id === t.contaId)?.nome ?? "", centavosParaCampo(t.tipo === "despesa" ? -t.valor : t.valor)].join(";"));
-    baixarArquivo(`niko-transacoes-${hojeISO()}.csv`, [cabecalho, ...linhas].join("\n"), "text/csv");
+    baixarArquivo(`ada-transacoes-${hojeISO()}.csv`, [cabecalho, ...linhas].join("\n"), "text/csv");
   };
 
   return (

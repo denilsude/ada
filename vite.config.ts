@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
 import { ponteLocal } from "./servidor/ponte";
 
 const POLITICA_SEGURANCA = [
@@ -25,7 +26,29 @@ function politicaDeSeguranca(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), politicaDeSeguranca(), ponteLocal()],
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: "autoUpdate",
+      includeAssets: ["favicon.svg", "favicon.ico", "favicon-16x16.png", "favicon-32x32.png", "favicon-48x48.png", "apple-touch-icon.png"],
+      manifest: {
+        name: "ADA",
+        short_name: "ADA",
+        description: "Sistema pessoal de organização e produtividade.",
+        theme_color: "#0e0e10",
+        background_color: "#0e0e10",
+        display: "standalone",
+        scope: "/",
+        start_url: "/",
+        icons: [
+          { src: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
+          { src: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
+        ],
+      },
+    }),
+    politicaDeSeguranca(),
+    ponteLocal(),
+  ],
   server: { port: 5420, strictPort: false, host: "localhost" },
   preview: { port: 5421, host: "localhost" },
   build: { chunkSizeWarningLimit: 1500 },

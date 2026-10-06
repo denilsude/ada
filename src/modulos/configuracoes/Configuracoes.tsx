@@ -89,7 +89,7 @@ function SecaoDados() {
   const [apagarChaves, setApagarChaves] = useState(false);
   const [zerando, setZerando] = useState(false);
 
-  const exportar = (nome = `niko-backup-${hojeISO()}.json`) => {
+  const exportar = (nome = `ada-backup-${hojeISO()}.json`) => {
     const dados: Record<string, string> = {};
     for (const k of listarChaves()) {
       const v = lerChave(k);
@@ -173,7 +173,7 @@ function SecaoDados() {
               <Botao
                 variante="primario"
                 onClick={() => {
-                  exportar(`niko-antes-de-restaurar-${hojeISO()}.json`);
+                  exportar(`ada-antes-de-restaurar-${hojeISO()}.json`);
                   for (const [k, v] of Object.entries(previa.dados)) gravarChave(k, v);
                   avisar(T.configuracoes.restaurado);
                   void salvarAgora().then(() => window.setTimeout(() => window.location.reload(), 400));
@@ -193,7 +193,7 @@ function SecaoDados() {
             e.preventDefault();
             if (confirmacao !== "APAGAR" || zerando) return;
             setZerando(true);
-            exportar(`niko-antes-de-zerar-${hojeISO()}.json`);
+            exportar(`ada-antes-de-zerar-${hojeISO()}.json`);
             zerarTudo(apagarChaves)
               .then(() => window.location.reload())
               .catch(() => {
@@ -342,7 +342,7 @@ export default function Configuracoes() {
             icone={<Download size={14} />}
             onClick={() => {
               const visual = Object.fromEntries(CHAVES_VISUAL.map((k) => [k, cfg[k]]));
-              baixarArquivo(`visual-${hojeISO()}.niko-visual`, JSON.stringify({ tipo: "niko-visual", versao: 1, visual }, null, 2));
+              baixarArquivo(`visual-${hojeISO()}.ada-visual`, JSON.stringify({ tipo: "niko-visual", versao: 1, visual }, null, 2));
             }}
           >
             {T.configuracoes.exportarVisual}
@@ -352,7 +352,7 @@ export default function Configuracoes() {
             {T.configuracoes.importarVisual}
             <input
               type="file"
-              accept=".niko-visual,.json"
+              accept=".ada-visual,.niko-visual,.json"
               hidden
               onChange={async (e) => {
                 const f = e.target.files?.[0];
