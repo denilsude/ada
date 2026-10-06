@@ -33,7 +33,7 @@ export const INTERVALO_PADRAO: Record<ServicoId, number> = {
 };
 
 function conexaoInicial(id: ServicoId): Conexao {
-  return { id, ligada: false, chaveSalva: false, intervalo: INTERVALO_PADRAO[id], status: "sem_chave", resumo: "", fixadaNaIlha: false };
+  return { id, ligada: false, chaveSalva: false, intervalo: INTERVALO_PADRAO[id], status: "sem_chave", resumo: "" };
 }
 
 export interface DadosComunicacao {
@@ -121,7 +121,11 @@ export const useComunicacao = create<EstadoComunicacao>()(
       storage: armazenamento,
       merge: (persistido, atual) => {
         const salvo = (persistido ?? {}) as Partial<DadosComunicacao>;
-        const conexoes = SERVICOS.map((id) => ({ ...conexaoInicial(id), ...salvo.conexoes?.find((c) => c.id === id) }));
+        const conexoes = SERVICOS.map((id) => {
+          const { fixadaNaIlha: _fixadaNaIlha, ...dados } =
+            (salvo.conexoes?.find((c) => c.id === id) ?? {}) as Partial<Conexao> & { fixadaNaIlha?: boolean };
+          return { ...conexaoInicial(id), ...dados };
+        });
         return { ...atual, ...salvo, conexoes };
       },
     },

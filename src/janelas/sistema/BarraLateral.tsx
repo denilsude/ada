@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search, Sun, Moon, PanelLeftClose, PanelLeftOpen, Circle, CheckCircle2, Settings, ChevronDown } from "lucide-react";
+import { Search, Sun, Moon, PanelLeftClose, PanelLeftOpen, Circle, CheckCircle2, Settings, ChevronDown, ArrowLeft } from "lucide-react";
 import { useConfig, GRUPO_DA_ROTA } from "../../estado/configuracoes";
 import { useInterface } from "../../estado/interface";
 import { useRotina, tarefasDoDia } from "../../estado/rotina";
@@ -38,6 +38,8 @@ export function BarraLateral({ recolhida }: { recolhida: boolean }) {
   const recolhidaManual = useConfig((s) => s.barraRecolhida);
   const rota = useInterface((s) => s.rota);
   const irPara = useInterface((s) => s.irPara);
+  const historico = useInterface((s) => s.historico);
+  const voltar = useInterface((s) => s.voltar);
   const abrirBusca = useInterface((s) => s.abrirBusca);
   const tarefas = useRotina((s) => s.tarefas);
   const mudarStatus = useRotina((s) => s.mudarStatus);
@@ -101,6 +103,12 @@ export function BarraLateral({ recolhida }: { recolhida: boolean }) {
           </button>
         )}
       </div>
+      {historico.length > 0 && (
+        <button type="button" className="barra-item" aria-label={T.janela.voltar} title={T.janela.voltar} onClick={voltar}>
+          <ArrowLeft size={16} />
+          {!recolhida && <span>{T.janela.voltar}</span>}
+        </button>
+      )}
       {recolhida && (
         <button type="button" className="barra-item" aria-label={T.barraLateral.expandir} title={`${T.barraLateral.expandir} (Ctrl + B)`} onClick={() => definir({ barraRecolhida: false })}>
           <PanelLeftOpen size={16} />

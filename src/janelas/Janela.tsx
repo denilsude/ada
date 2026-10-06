@@ -8,7 +8,7 @@ import { janelaAtual } from "../desktop/desktop";
 
 import { areaUtil } from "./geometria";
 
-export { areaUtil, ALTURA_BARRA_TAREFAS } from "./geometria";
+export { areaUtil } from "./geometria";
 
 interface Props {
   titulo: ReactNode;

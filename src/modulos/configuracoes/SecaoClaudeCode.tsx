@@ -6,7 +6,6 @@ import { useConfig } from "../../estado/configuracoes";
 import { useInterface } from "../../estado/interface";
 import { claudeCode, type EstadoDaInstalacao, type PreviaDaInstalacao } from "../../ponte/claudeCode";
 import { tocarSom } from "../../ponte/sons";
-import { permitirNotificacoes } from "../../desktop/desktop";
 import { T } from "../../textos/textos";
 
 const C = T.configuracoes.claudeCode;
@@ -24,8 +23,6 @@ function situacao(e: EstadoDaInstalacao | null): { rotulo: string; tipo: "ok" | 
 
 export function SecaoClaudeCode() {
   const avisar = useInterface((s) => s.avisar);
-  const ilha = useConfig((s) => s.ilha);
-  const definirIlha = useConfig((s) => s.definirIlha);
   const definir = useConfig((s) => s.definir);
   const notificar = useConfig((s) => s.notificarClaude);
   const [estado, setEstado] = useState<EstadoDaInstalacao | null>(null);
@@ -57,7 +54,6 @@ export function SecaoClaudeCode() {
     const acao = previa.acao;
     (acao === "instalar" ? claudeCode.instalar() : claudeCode.remover())
       .then((r) => {
-        if (acao === "instalar") definirIlha({ blocos: { ...useConfig.getState().ilha.blocos, claude: true } });
         definir({ claudeInstalado: acao === "instalar" });
         avisar(acao === "instalar" ? C.conectadoAviso(r.copia) : C.removidoAviso(r.copia));
         void tocarSom(acao === "instalar" ? "approve" : "close", "interface");
@@ -107,17 +103,21 @@ export function SecaoClaudeCode() {
         )}
       </div>
 
-      <LinhaAlternador rotulo={C.mostrarAba} dica={instalado ? undefined : C.mostrarAbaDica} ligado={ilha.blocos.claude} aoMudar={(v) => definirIlha({ blocos: { ...ilha.blocos, claude: v } })} />
       <div className="coluna" style={{ gap: 4 }}>
         <LinhaAlternador
           rotulo={C.notificar}
           ligado={notificar}
           aoMudar={(v) => {
             if (!v) return definir({ notificarClaude: false });
-            void permitirNotificacoes().then((ok) => {
-              definir({ notificarClaude: ok });
-              if (!ok) setErro(C.notificarNegado);
-            });
+            if (typeof Notification === "undefined") {
+              setErro(C.notificarNegado);
+              return;
+            }
+            void Notification.requestPermission().then((permissao) => {
+              const permitido = permissao === "granted";
+              definir({ notificarClaude: permitido });
+              if (!permitido) setErro(C.notificarNegado);
+            }).catch(() => setErro(C.notificarNegado));
           }}
         />
         <span className="campo-dica">{C.notificarDica}</span>

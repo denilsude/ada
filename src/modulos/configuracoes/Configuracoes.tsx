@@ -3,27 +3,26 @@ import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  Settings, Palette, PanelTop, PanelBottom, Timer, Users, Volume2, Gauge, Maximize, Keyboard, ShieldCheck, Database, Info, Wrench,
+  Settings, Palette, Timer, Users, Volume2, Gauge, Keyboard, ShieldCheck, Database, Info, Wrench,
   GripVertical, Download, Upload, RotateCcw, Trash2, DatabaseBackup, SquareTerminal,
 } from "lucide-react";
 import { CabecalhoAba } from "../../componentes/CabecalhoAba";
 import { Cartao, Botao, Campo, Modal, Segmentado, AvisoFaixa, LinhaAlternador, Alternador, Tecla, ConfirmarModal } from "../../componentes/basicos";
 import { Personagem } from "../../personagens/Personagem";
-import { useConfig, BARRA_PADRAO, type ModoBorda, type Paleta, type Tema, type RepousoIlha, type AbaIlha, CONFIG_PADRAO } from "../../estado/configuracoes";
+import { useConfig, BARRA_PADRAO, type Paleta, type Tema, CONFIG_PADRAO } from "../../estado/configuracoes";
 import { useAgentes, AGENTES } from "../../estado/agentes";
 import { useComunicacao } from "../../estado/comunicacao";
 import { useInterface } from "../../estado/interface";
 import { usePomodoro } from "../../estado/pomodoro";
 import { T } from "../../textos/textos";
-import { contraste, hexValido, FUNDO_DESTAQUE } from "../../utilitarios/cores";
+import { contraste, hexValido } from "../../utilitarios/cores";
 import { baixarArquivo, lerArquivoTexto, normalizarTexto } from "../../utilitarios/basicos";
-import { abaLigada, rotaLigada } from "../../utilitarios/funcoes";
+import { rotaLigada } from "../../utilitarios/funcoes";
 import { hojeISO } from "../../utilitarios/datas";
 import { listarChaves, lerChave, gravarChave, salvarAgora, modoArmazenamento, zerarTudo, tamanhoGuardado, PREFIXO } from "../../ponte/armazenamento";
 import { TODOS_OS_SONS, tocarSom, type CategoriaSom } from "../../ponte/sons";
 import { DESTAQUE_PADRAO } from "../../janelas/area-de-trabalho/usarTema";
 import { EditorFoto } from "../../componentes/FotoPerfil";
-import { SeletorDeFundo } from "./SeletorDeFundo";
 import { SecaoClaudeCode } from "./SecaoClaudeCode";
 import type { EstadoAgente, Rota } from "../../tipos";
 
@@ -32,13 +31,10 @@ type Secao = keyof typeof T.configuracoes.secoes;
 const ICONES: Record<Secao, React.ReactNode> = {
   geral: <Settings size={15} />,
   aparencia: <Palette size={15} />,
-  ilha: <PanelTop size={15} />,
-  dock: <PanelBottom size={15} />,
   pomodoro: <Timer size={15} />,
   agentes: <Users size={15} />,
   sons: <Volume2 size={15} />,
   consumo: <Gauge size={15} />,
-  tela: <Maximize size={15} />,
   atalhos: <Keyboard size={15} />,
   privacidade: <ShieldCheck size={15} />,
   dados: <Database size={15} />,
@@ -62,15 +58,7 @@ function ItemBarraOrdenavel({ rota, nome, visivel, aoMudarNome, aoMudarVisivel }
   );
 }
 
-const CHAVES_VISUAL = ["tema", "paleta", "destaque", "escala", "barraLateral", "ilha", "dock"] as const;
-
-function fundoValido(valor: unknown): valor is string {
-  return valor === FUNDO_DESTAQUE || (typeof valor === "string" && hexValido(valor));
-}
-
-function opacidadeValida(valor: unknown): valor is number {
-  return typeof valor === "number" && valor >= 0.3 && valor <= 1;
-}
+const CHAVES_VISUAL = ["tema", "paleta", "destaque", "escala", "barraLateral"] as const;
 
 function validarVisual(dados: unknown): Partial<ReturnType<typeof useConfig.getState>> | null {
   if (!dados || typeof dados !== "object") return null;
@@ -86,30 +74,6 @@ function validarVisual(dados: unknown): Partial<ReturnType<typeof useConfig.getS
   if (Array.isArray(v.barraLateral)) {
     const validos = v.barraLateral.filter((i: unknown) => i && typeof i === "object" && BARRA_PADRAO.some((b) => b.rota === (i as { rota: string }).rota)).map((i: { rota: Rota; nome?: unknown; visivel?: unknown }) => ({ rota: i.rota, nome: typeof i.nome === "string" ? i.nome.slice(0, 24) : undefined, visivel: i.visivel !== false }));
     if (validos.length) saida.barraLateral = [...validos, ...BARRA_PADRAO.filter((b) => !validos.some((x: { rota: Rota }) => x.rota === b.rota))];
-  }
-  if (v.ilha && typeof v.ilha === "object") {
-    const i = v.ilha as Record<string, unknown>;
-    saida.ilha = {
-      ...CONFIG_PADRAO.ilha,
-      modo: ["fixo", "esconder", "inteligente"].includes(i.modo as string) ? i.modo : CONFIG_PADRAO.ilha.modo,
-      tamanho: ["pequena", "media", "grande"].includes(i.tamanho as string) ? i.tamanho : "media",
-      fundo: fundoValido(i.fundo) ? i.fundo : CONFIG_PADRAO.ilha.fundo,
-      opacidade: opacidadeValida(i.opacidade) ? i.opacidade : 1,
-      repouso: ["nada", "relogio", "midia", "agente"].includes(i.repouso as string) ? i.repouso : "agente",
-      fechamentoSeg: typeof i.fechamentoSeg === "number" && i.fechamentoSeg >= 0 && i.fechamentoSeg <= 120 ? i.fechamentoSeg : 15,
-      abrirHover: i.abrirHover === true,
-      laterais: i.laterais !== false,
-    };
-  }
-  if (v.dock && typeof v.dock === "object") {
-    const k = v.dock as Record<string, unknown>;
-    saida.dock = {
-      ...useConfig.getState().dock,
-      ativo: k.ativo !== false,
-      modo: ["fixo", "esconder", "inteligente"].includes(k.modo as string) ? (k.modo as ModoBorda) : "inteligente",
-      fundo: fundoValido(k.fundo) ? k.fundo : CONFIG_PADRAO.dock.fundo,
-      opacidade: opacidadeValida(k.opacidade) ? k.opacidade : 1,
-    };
   }
   return saida as Partial<ReturnType<typeof useConfig.getState>>;
 }
@@ -292,17 +256,6 @@ export default function Configuracoes() {
     cfg.definir({ barraLateral: arrayMove(cfg.barraLateral, de, para) });
   };
 
-  const aoArrastarAbas = (e: DragEndEvent) => {
-    if (!e.over || e.active.id === e.over.id) return;
-    const de = cfg.ilha.ordemAbas.indexOf(e.active.id as AbaIlha);
-    const para = cfg.ilha.ordemAbas.indexOf(e.over.id as AbaIlha);
-    cfg.definirIlha({ ordemAbas: arrayMove(cfg.ilha.ordemAbas, de, para) });
-  };
-
-  const segModo = (valor: ModoBorda, aoMudar: (m: ModoBorda) => void) => (
-    <Segmentado<ModoBorda> rotulo={T.configuracoes.modo} valor={valor} aoMudar={aoMudar} opcoes={(["fixo", "esconder", "inteligente"] as ModoBorda[]).map((m) => ({ valor: m, rotulo: T.configuracoes.modos[m] }))} />
-  );
-
   const conteudo: Record<Secao, React.ReactNode> = {
     geral: (
       <>
@@ -314,8 +267,6 @@ export default function Configuracoes() {
           <input id="cf-nome" className="campo" value={cfg.nome} maxLength={40} onChange={(e) => cfg.definir({ nome: e.target.value })} />
         </Campo>
         <LinhaAlternador rotulo={T.configuracoes.viradaDia} dica={T.configuracoes.viradaDiaDica} ligado={cfg.viradaAs4h} aoMudar={(v) => cfg.definir({ viradaAs4h: v })} />
-        <LinhaAlternador rotulo={T.configuracoes.iniciarComWindows} dica={T.configuracoes.iniciarComWindowsDica} ligado={cfg.iniciarComWindows} aoMudar={(v) => cfg.definir({ iniciarComWindows: v })} />
-        <LinhaAlternador rotulo={T.configuracoes.manterSegundoPlano} dica={`${T.configuracoes.manterDica} ${T.configuracoes.somenteDesktop}.`} ligado={false} desativado aoMudar={() => undefined} />
         <LinhaAlternador rotulo={T.configuracoes.conquistasAtivas} ligado={cfg.conquistasAtivas} aoMudar={(v) => cfg.definir({ conquistasAtivas: v })} />
       </>
     ),
@@ -422,78 +373,6 @@ export default function Configuracoes() {
         </div>
       </>
     ),
-    ilha: (
-      <>
-        <LinhaAlternador rotulo={T.configuracoes.ilhaAtiva} ligado={cfg.ilha.ativa} aoMudar={(v) => cfg.definirIlha({ ativa: v })} />
-        <div className="campo-grupo">
-          <span className="campo-rotulo">{T.configuracoes.modo}</span>
-          {segModo(cfg.ilha.modo, (modo) => cfg.definirIlha({ modo }))}
-          <span className="campo-dica">{T.configuracoes.modosDica[cfg.ilha.modo]}</span>
-        </div>
-        <div className="campo-grupo">
-          <span className="campo-rotulo">{T.configuracoes.blocosIlha}</span>
-          <span className="campo-dica">{T.configuracoes.blocosDica}</span>
-          <DndContext collisionDetection={closestCenter} onDragEnd={aoArrastarAbas}>
-            <SortableContext items={cfg.ilha.ordemAbas} strategy={verticalListSortingStrategy}>
-              <div className="lista">
-                {cfg.ilha.ordemAbas.filter((a) => abaLigada(a, cfg.funcoesDesligadas)).map((a) => <AbaIlhaOrdenavel key={a} aba={a} />)}
-              </div>
-            </SortableContext>
-          </DndContext>
-        </div>
-        <div className="formulario-linha">
-          <Campo id="il-rep" rotulo={T.configuracoes.repousoIlha}>
-            <select id="il-rep" className="seletor" value={cfg.ilha.repouso} onChange={(e) => cfg.definirIlha({ repouso: e.target.value as RepousoIlha })}>
-              {(Object.keys(T.configuracoes.repousos) as RepousoIlha[]).map((r) => <option key={r} value={r}>{T.configuracoes.repousos[r]}</option>)}
-            </select>
-          </Campo>
-          <Campo id="il-tam" rotulo={T.configuracoes.tamanhoIlha}>
-            <select id="il-tam" className="seletor" value={cfg.ilha.tamanho} onChange={(e) => cfg.definirIlha({ tamanho: e.target.value as "pequena" | "media" | "grande" })}>
-              {(["pequena", "media", "grande"] as const).map((t) => <option key={t} value={t}>{T.configuracoes.tamanhos[t]}</option>)}
-            </select>
-          </Campo>
-        </div>
-        <SeletorDeFundo id="il-fundo" fundo={cfg.ilha.fundo} opacidade={cfg.ilha.opacidade} aoMudar={(m) => cfg.definirIlha(m)} />
-        <div className="formulario-linha">
-          <Campo id="il-fech" rotulo={T.configuracoes.fechamentoAuto}>
-            <select id="il-fech" className="seletor" value={cfg.ilha.fechamentoSeg} onChange={(e) => cfg.definirIlha({ fechamentoSeg: Number(e.target.value) })}>
-              {[5, 10, 15, 30, 60, 120].map((s) => <option key={s} value={s}>{T.conexoes.segundos(s)}</option>)}
-              <option value={0}>{T.configuracoes.nunca}</option>
-            </select>
-          </Campo>
-          <Campo id="il-esc" rotulo={T.configuracoes.esconderCompacta}>
-            <select id="il-esc" className="seletor" value={cfg.ilha.esconderSeg} disabled={cfg.ilha.modo !== "esconder"} onChange={(e) => cfg.definirIlha({ esconderSeg: Number(e.target.value) })}>
-              {[10, 30, 60, 120, 300].map((s) => <option key={s} value={s}>{T.conexoes.segundos(s)}</option>)}
-            </select>
-          </Campo>
-        </div>
-        <LinhaAlternador rotulo={T.configuracoes.lateraisIlha} dica={T.configuracoes.lateraisDica} ligado={cfg.ilha.laterais} aoMudar={(v) => cfg.definirIlha({ laterais: v })} />
-        <LinhaAlternador rotulo={T.configuracoes.abrirHover} ligado={cfg.ilha.abrirHover} aoMudar={(v) => cfg.definirIlha({ abrirHover: v })} />
-        <div className="campo-grupo">
-          <span className="campo-rotulo">{T.configuracoes.notificacoesIlha}</span>
-          <Segmentado rotulo={T.configuracoes.notificacoesIlha} valor={cfg.ilha.notificacoes} aoMudar={(v) => cfg.definirIlha({ notificacoes: v })} opcoes={(["importantes", "todas", "nenhuma"] as const).map((v) => ({ valor: v, rotulo: T.configuracoes.notificacoesOpcoes[v] }))} />
-          <span className="campo-dica">{T.configuracoes.notificacoesDica[cfg.ilha.notificacoes]}</span>
-        </div>
-        <Campo id="il-fav" rotulo={T.configuracoes.agenteFavorito}>
-          <select id="il-fav" className="seletor" value={cfg.agentes.favorito} onChange={(e) => cfg.definir({ agentes: { ...cfg.agentes, favorito: e.target.value as typeof cfg.agentes.favorito } })}>
-            {AGENTES.map((a) => <option key={a} value={a}>{cfg.agentes.nomes[a]}</option>)}
-          </select>
-        </Campo>
-      </>
-    ),
-    dock: (
-      <>
-        <LinhaAlternador rotulo={T.configuracoes.dockAtivo} ligado={cfg.dock.ativo} aoMudar={(v) => cfg.definir({ dock: { ...cfg.dock, ativo: v } })} />
-        <div className="campo-grupo">
-          <span className="campo-rotulo">{T.configuracoes.modo}</span>
-          {segModo(cfg.dock.modo, (modo) => cfg.definir({ dock: { ...cfg.dock, modo } }))}
-          <span className="campo-dica">{T.configuracoes.modosDica[cfg.dock.modo]}</span>
-        </div>
-        <LinhaAlternador rotulo={T.configuracoes.ampliarDock} ligado={cfg.dock.ampliar} aoMudar={(v) => cfg.definir({ dock: { ...cfg.dock, ampliar: v } })} />
-        <SeletorDeFundo id="dk-fundo" fundo={cfg.dock.fundo} opacidade={cfg.dock.opacidade} aoMudar={(m) => cfg.definir({ dock: { ...cfg.dock, ...m } })} />
-        <AvisoFaixa>{T.configuracoes.appsWindowsDock}</AvisoFaixa>
-      </>
-    ),
     pomodoro: (
       <>
         <span className="campo-rotulo">{T.configuracoes.duracoes}</span>
@@ -587,15 +466,6 @@ export default function Configuracoes() {
           </Campo>
         ))}
       </div>
-      </>
-    ),
-    tela: (
-      <>
-        <AvisoFaixa>{T.configuracoes.telaNavegador}</AvisoFaixa>
-        <LinhaAlternador rotulo={T.configuracoes.esconderTelaCheia} ligado={cfg.esconderTelaCheia} aoMudar={(v) => cfg.definir({ esconderTelaCheia: v })} />
-        <Campo id="tc-apps" rotulo={T.configuracoes.appsEsconder} dica={T.configuracoes.appsDica}>
-          <textarea id="tc-apps" className="area-texto" value={cfg.appsEsconder} maxLength={1000} onChange={(e) => cfg.definir({ appsEsconder: e.target.value })} />
-        </Campo>
       </>
     ),
     atalhos: (
@@ -708,22 +578,5 @@ export default function Configuracoes() {
       </Modal>
       <ConfirmarModal aberto={limparChat} titulo={T.configuracoes.limparChat} texto={T.geral.confirmarExclusaoTexto} aoFechar={() => setLimparChat(false)} aoConfirmar={limparConversas} />
     </>
-  );
-}
-
-function AbaIlhaOrdenavel({ aba }: { aba: AbaIlha }) {
-  const ligado = useConfig((s) => s.ilha.blocos[aba]);
-  const definirIlha = useConfig((s) => s.definirIlha);
-  const blocos = useConfig((s) => s.ilha.blocos);
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: aba });
-  const ativos = Object.values(blocos).filter(Boolean).length;
-  return (
-    <div ref={setNodeRef} className="lista-item" style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.6 : 1, background: "var(--superficie)" }}>
-      <button type="button" className="botao botao-fantasma botao-pequeno botao-icone" aria-label={T.ilha.abas[aba]} style={{ cursor: "grab" }} {...attributes} {...listeners}>
-        <GripVertical size={14} />
-      </button>
-      <span className="lista-item-principal">{T.ilha.abas[aba]}</span>
-      <Alternador ligado={ligado} rotulo={T.ilha.abas[aba]} desativado={ligado && ativos <= 1} aoMudar={(v) => definirIlha({ blocos: { ...blocos, [aba]: v } })} />
-    </div>
   );
 }

@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
 import { emitTo, listen } from "@tauri-apps/api/event";
 import type { Rota, ServicoId } from "../tipos";
 
-export type NomeJanela = "sistema" | "ilha" | "dock";
+export type NomeJanela = "sistema";
 
 interface InternosTauri {
   metadata?: { currentWindow?: { label?: string } };
@@ -93,10 +92,6 @@ export function mostrarSistema() {
   return invocar("mostrar_sistema");
 }
 
-export function informarAreaInterativa(retangulos: { x: number; y: number; w: number; h: number }[]) {
-  return invocar("area_interativa", { janela: JANELA, retangulos });
-}
-
 export async function janelaAtual() {
   const { getCurrentWindow } = await import("@tauri-apps/api/window");
   return getCurrentWindow();
@@ -130,218 +125,10 @@ export async function prepararPonte() {
   if (tokenDeDesenvolvimento) enviarPelaPonte("", tokenDeDesenvolvimento);
 }
 
-export async function sincronizarInicioComWindows(ligado: boolean) {
-  if (!NATIVO) return;
-  try {
-    const { enable, disable, isEnabled } = await import("@tauri-apps/plugin-autostart");
-    const atual = await isEnabled();
-    if (ligado && !atual) await enable();
-    if (!ligado && atual) await disable();
-  } catch {
-    return;
-  }
-}
-
-const INTERVALO_SEGURANCA_AREA_MS = 1000;
-
-export function usarAreaInterativa(seletores: string[]) {
-  const chaveSeletores = seletores.join(",");
-  useEffect(() => {
-    if (!NATIVO) return;
-    let anterior = "";
-    let quadro = 0;
-    const medir = () => {
-      quadro = 0;
-      const retangulos = [...document.querySelectorAll(chaveSeletores)]
-        .map((el) => el.getBoundingClientRect())
-        .filter((r) => r.width > 0 && r.height > 0)
-        .map((r) => ({ x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }));
-      const atual = JSON.stringify(retangulos);
-      if (atual === anterior) return;
-      anterior = atual;
-      void informarAreaInterativa(retangulos);
-    };
-    const agendar = () => {
-      if (!quadro) quadro = window.requestAnimationFrame(medir);
-    };
-    const atributos = new MutationObserver(agendar);
-    const observarAlvos = () => {
-      atributos.disconnect();
-      for (const el of document.querySelectorAll(chaveSeletores)) {
-        for (let no: Element | null = el; no && no !== document.body; no = no.parentElement) atributos.observe(no, { attributes: true, attributeFilter: ["style", "class"] });
-      }
-    };
-    const estrutura = new MutationObserver(() => {
-      observarAlvos();
-      agendar();
-    });
-    observarAlvos();
-    medir();
-    estrutura.observe(document.body, { subtree: true, childList: true });
-    const eventos = ["resize", "transitionend", "animationend"] as const;
-    for (const e of eventos) window.addEventListener(e, agendar, true);
-    const seguranca = window.setInterval(agendar, INTERVALO_SEGURANCA_AREA_MS);
-    return () => {
-      atributos.disconnect();
-      estrutura.disconnect();
-      for (const e of eventos) window.removeEventListener(e, agendar, true);
-      window.clearInterval(seguranca);
-      window.cancelAnimationFrame(quadro);
-    };
-  }, [chaveSeletores]);
-}
-
-export function usarCursorFora(fn: () => void) {
-  useEffect(() => {
-    if (!NATIVO) return;
-    let desligar: () => void = () => undefined;
-    let ativo = true;
-    void ouvirEvento("niko://cursor-fora", fn).then((f) => {
-      if (ativo) desligar = f;
-      else f();
-    });
-    return () => {
-      ativo = false;
-      desligar();
-    };
-  }, [fn]);
-}
-export interface AppAberto {
-  id: string;
-  pid: number;
-  titulo: string;
-  minimizada: boolean;
-  ativa: boolean;
-  app: string;
-  nome: string;
-  caminho: string | null;
-  icone: string | null;
-}
-
-export function usarAppsAbertos(ativo: boolean): [AppAberto[], () => void] {
-  const [apps, setApps] = useState<AppAberto[]>([]);
-  const [versao, setVersao] = useState(0);
-  useEffect(() => {
-    if (!NATIVO || !ativo) return;
-    let vivo = true;
-    const ler = async () => {
-      try {
-        const r = await fetch("/ponte/janelas", { headers: { "x-niko": "1" } });
-        if (!r.ok) return;
-        const j = (await r.json()) as { janelas?: AppAberto[] | AppAberto };
-        const lista = Array.isArray(j.janelas) ? j.janelas : j.janelas ? [j.janelas] : [];
-        if (vivo) setApps(lista);
-      } catch {
-        return;
-      }
-    };
-    void ler();
-    const t = window.setInterval(() => void ler(), 2000);
-    return () => {
-      vivo = false;
-      window.clearInterval(t);
-    };
-  }, [ativo, versao]);
-  return [apps, () => setVersao((v) => v + 1)];
-}
-
-export interface AreaMiniatura {
-  janela: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-export function mostrarMiniaturas(itens: AreaMiniatura[]) {
-  return invocar("miniaturas_janelas", { itens });
-}
-
-export function ocultarBarraDoWindows(ocultar: boolean) {
-  return invocar("barra_windows", { ocultarBarra: ocultar });
-}
-
-export function reservarEspacoDoDock(reservar: boolean) {
-  return invocar("reservar_dock", { reservar });
-}
-
-export type TipoDaFrente = "area_de_trabalho" | "sobreposta" | "app";
-
-export interface EstadoDaFrente {
-  cobre: boolean;
-  telaCheia: boolean;
-  maximizada: boolean;
-  frente: TipoDaFrente;
-}
-
-const FRENTE_LIVRE: EstadoDaFrente = { cobre: false, telaCheia: false, maximizada: false, frente: "area_de_trabalho" };
-
-export async function permitirNotificacoes(): Promise<boolean> {
-  if (!NATIVO) return false;
-  try {
-    const { isPermissionGranted, requestPermission } = await import("@tauri-apps/plugin-notification");
-    if (await isPermissionGranted()) return true;
-    return (await requestPermission()) === "granted";
-  } catch {
-    return false;
-  }
-}
-
-export async function notificarWindows(titulo: string, corpo: string): Promise<void> {
-  if (!NATIVO) return;
-  try {
-    const { isPermissionGranted, sendNotification } = await import("@tauri-apps/plugin-notification");
-    if (await isPermissionGranted()) sendNotification({ title: titulo, body: corpo });
-  } catch {
-    return;
-  }
-}
-
-export async function frenteCobreAIlha(): Promise<boolean> {
-  const r = await invocar<EstadoDaFrente>("frente_cobre_tela");
-  return Boolean(r?.cobre);
-}
-
-export async function frenteEmTelaCheia(): Promise<boolean> {
-  const r = await invocar<EstadoDaFrente>("frente_cobre_tela");
-  return Boolean(r?.telaCheia);
-}
-
-export function usarEstadoDaFrente(ativo: boolean): EstadoDaFrente {
-  const [estado, setEstado] = useState<EstadoDaFrente>(FRENTE_LIVRE);
-  useEffect(() => {
-    if (!NATIVO || !ativo) {
-      setEstado(FRENTE_LIVRE);
-      return;
-    }
-    let vivo = true;
-    const ler = async () => {
-      const r = await invocar<EstadoDaFrente>("frente_cobre_tela");
-      if (!vivo) return;
-      const cobre = Boolean(r?.cobre);
-      const telaCheia = Boolean(r?.telaCheia);
-      const maximizada = Boolean(r?.maximizada);
-      const frente: TipoDaFrente = r?.frente === "app" || r?.frente === "sobreposta" ? r.frente : "area_de_trabalho";
-      setEstado((anterior) => (anterior.cobre === cobre && anterior.telaCheia === telaCheia && anterior.maximizada === maximizada && anterior.frente === frente ? anterior : { cobre, telaCheia, maximizada, frente }));
-    };
-    void ler();
-    const t = window.setInterval(() => void ler(), 800);
-    return () => {
-      vivo = false;
-      window.clearInterval(t);
-    };
-  }, [ativo]);
-  return estado;
-}
-
 export async function agirNaJanela(acao: "focar" | "minimizar" | "fechar", id: string) {
   try {
     await fetch(`/ponte/janelas/${acao}`, { method: "POST", headers: { "x-niko": "1", "content-type": "application/json" }, body: JSON.stringify({ janela: id }) });
   } catch {
     return;
   }
-}
-
-export function alternarSistemaNativo() {
-  return invocar("alternar_sistema");
 }

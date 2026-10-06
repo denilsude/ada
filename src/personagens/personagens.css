@@ -58,7 +58,6 @@
   100% { opacity: 0; transform: translateY(-18px) scale(0.9); }
 }
 
-.ilha-raiz .personagem[data-agente="tutor"] .personagem-imagem,
 [data-tema="escuro"] .personagem[data-agente="tutor"] .personagem-imagem,
 .sala-2d .personagem[data-agente="tutor"] .personagem-imagem,
 .agente-cena .personagem[data-agente="tutor"] .personagem-imagem {

@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useConfig } from "../estado/configuracoes";
 import { usePomodoro } from "../estado/pomodoro";
 import { useAgentes } from "../estado/agentes";
-import { useIlha } from "../estado/ilha";
 import { useMidia } from "../estado/midia";
 import { useInterface } from "../estado/interface";
 import { limparExemplos, limparSimulacoes } from "../dados/limparExemplos";
@@ -24,6 +23,7 @@ import { T } from "../textos/textos";
 import type { Evento, ServicoId } from "../tipos";
 import { addDays, addMonths, addWeeks } from "date-fns";
 import { conquistaLigada, funcaoLigada } from "../utilitarios/funcoes";
+import { usarClaudeCode } from "./usarClaudeCode";
 
 function notificar(titulo: string, corpo: string) {
   try {
@@ -61,7 +61,7 @@ function verificarPomodoro() {
   const etapa = p.concluirEtapa(situacao);
   const texto = etapa === "foco" ? T.pomodoro.fimFoco : T.pomodoro.fimPausa;
   void tocarSom("finish", "pomodoro");
-  useIlha.getState().revelar({ texto, tipo: "sucesso", agente: "organizador", aba: "foco" }, 4500, "alta");
+  useInterface.getState().avisar(texto);
   useAgentes.getState().registrar("organizador", texto);
   notificar(T.app.nome, texto);
 }
@@ -75,7 +75,7 @@ function verificarLembretes() {
     if (!disparo) continue;
     org.atualizarEvento(e.id, { ultimoDisparo: disparo });
     const texto = T.calendario.lembreteDisparado(e.titulo);
-    useAgentes.getState().alertar("organizador", texto, "calendario", "wink", undefined, true);
+    useAgentes.getState().alertar("organizador", texto, "calendario", "wink");
     notificar(T.app.nome, texto);
   }
 }
@@ -172,7 +172,7 @@ function verificarConquistas() {
     if (!def) continue;
     const nome = T.conquistas.itens[a.codigo]?.nome ?? a.codigo;
     void tocarSom("proud", "personagens");
-    useIlha.getState().revelar({ texto: T.conquistas.comemoracao(nome), tipo: "sucesso", agente: def.agente }, 4200);
+    useInterface.getState().avisar(T.conquistas.comemoracao(nome));
     useAgentes.getState().registrar(def.agente, T.conquistas.comemoracao(nome));
   }
 }
@@ -228,7 +228,7 @@ export async function atualizarConexaoAgora(id: ServicoId, forcar = true) {
       if (o.tipo === "falha") useAgentes.getState().alertar("java", o.texto, "conexoes", "error", id);
       else {
         useAgentes.getState().registrar("java", o.texto);
-        useIlha.getState().revelar({ texto: o.texto, tipo: "sucesso", marca: id, aba: "conexoes" }, 3800, "normal");
+        useInterface.getState().avisar(o.texto);
       }
     }
   } catch (e) {
@@ -257,6 +257,8 @@ export function useServicos() {
   const virada = useConfig((s) => s.viradaAs4h);
   const inatividade = useConfig((s) => s.agentes.inatividadeMin);
   const naoPerturbe = useConfig((s) => s.naoPerturbe);
+
+  usarClaudeCode(true);
 
   useEffect(() => {
     definirPreferenciasSom({ ...sons, silencioFoco: naoPerturbe });

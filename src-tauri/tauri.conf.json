@@ -1,6 +1,6 @@
 {
     "$schema":  "https://schema.tauri.app/config/2",
-    "productName":  "Niko",
+    "productName":  "ADA",
     "version":  "0.2.0",
     "identifier":  "com.niko.desktop",
     "build":  {
@@ -34,7 +34,7 @@
                                      "recursos/ponte.mjs":  "recursos/ponte.mjs"
                                  },
                    "publisher":  "vitorcgo",
-                   "shortDescription":  "Niko, seu sistema de vida para Windows",
+                   "shortDescription":  "ADA, seu sistema de vida para Windows",
                    "windows":  {
                                    "nsis":  {
                                                 "installMode":  "currentUser",
@@ -43,18 +43,6 @@
                                                               ],
                                                 "displayLanguageSelector":  false
                                             }
-                               },
-                   "createUpdaterArtifacts":  true
-               },
-    "plugins":  {
-                    "updater":  {
-                                    "pubkey":  "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ4NDg1ODRGQ0IyMThBOTgKUldTWWlpSExUMWhJU04zK0l4TUsxT0Z1aHkxQzVtOCtXZWZRd3pUZ3dYKzdOckhBay96OUFRczMK",
-                                    "endpoints":  [
-                                                      "https://github.com/vitorcgo/niko/releases/latest/download/latest.json"
-                                                  ],
-                                    "windows":  {
-                                                    "installMode":  "passive"
-                                                }
-                                }
-                }
+                               }
+               }
 }

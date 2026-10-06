@@ -2,22 +2,18 @@
   position: fixed;
   inset: 0;
   overflow: hidden;
-  background:
-    radial-gradient(1200px 700px at 20% 10%, color-mix(in srgb, var(--destaque) 18%, transparent), transparent 60%),
-    radial-gradient(900px 600px at 85% 85%, color-mix(in srgb, #e05a8a 12%, transparent), transparent 60%),
-    linear-gradient(160deg, #c9ccd3 0%, #a9aeb8 100%);
+  background: var(--fundo);
 }
 
-[data-tema="escuro"] .area-trabalho {
-  background:
-    radial-gradient(1200px 700px at 20% 10%, color-mix(in srgb, var(--destaque) 22%, transparent), transparent 60%),
-    radial-gradient(900px 600px at 85% 85%, color-mix(in srgb, #e05a8a 14%, transparent), transparent 60%),
-    linear-gradient(160deg, #1b1d22 0%, #0b0c0f 100%);
-}
-
-.area-trabalho:not(.area-nativa),
-[data-tema="escuro"] .area-trabalho:not(.area-nativa) {
-  background: #eef1f6 url("/fundo/papel-de-parede.jpg") center / cover no-repeat;
+.sistema-aplicacao {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--fundo);
 }
 
 .barra-tarefas {

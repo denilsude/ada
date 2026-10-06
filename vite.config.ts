@@ -17,7 +17,7 @@ const POLITICA_SEGURANCA = [
 
 function politicaDeSeguranca(): Plugin {
   return {
-    name: "niko-politica-seguranca",
+    name: "ada-politica-seguranca",
     apply: "build",
     transformIndexHtml: (html) =>
       html.replace("<head>", `<head>\n    <meta http-equiv="Content-Security-Policy" content="${POLITICA_SEGURANCA}" />\n    <meta name="referrer" content="no-referrer" />`),

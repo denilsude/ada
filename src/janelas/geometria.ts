@@ -1,18 +1,7 @@
-import { useConfig } from "../estado/configuracoes";
 import { useInterface, type Geometria } from "../estado/interface";
 
-export const ALTURA_BARRA_TAREFAS = 0;
-export const ALTURA_DOCK = 62;
-export const FOLGA_DOCK = 10;
-export const TOPO_RESERVADO = 40;
-
-export function reservaDock(): number {
-  const dock = useConfig.getState().dock;
-  return dock.ativo && dock.modo === "fixo" ? ALTURA_DOCK : 0;
-}
-
 export function areaUtil() {
-  return { w: window.innerWidth, h: window.innerHeight - ALTURA_BARRA_TAREFAS - reservaDock() };
+  return { w: window.innerWidth, h: window.innerHeight };
 }
 
 export function retangulosAbertos(): Geometria[] {

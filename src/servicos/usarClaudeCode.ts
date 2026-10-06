@@ -1,26 +1,22 @@
 import { useEffect } from "react";
-import { claudeCode, ouvirClaudeCode, type EventoClaude } from "../../../ponte/claudeCode";
-import { frenteCobreAIlha, frenteEmTelaCheia, notificarWindows } from "../../../desktop/desktop";
-import { useClaudeCode } from "../../../estado/claudeCode";
-import { useIlha } from "../../../estado/ilha";
-import { useConfig } from "../../../estado/configuracoes";
-import { tocarSom } from "../../../ponte/sons";
-import { T } from "../../../textos/textos";
+import { claudeCode, ouvirClaudeCode, type EventoClaude } from "../ponte/claudeCode";
+import { useClaudeCode } from "../estado/claudeCode";
+import { useConfig } from "../estado/configuracoes";
+import { useInterface } from "../estado/interface";
+import { tocarSom } from "../ponte/sons";
+import { T } from "../textos/textos";
 
 const TOLERANCIA_MS = 1500;
 
 function abaLigada() {
-  const { ilha } = useConfig.getState();
-  return ilha.ativa && ilha.blocos.claude;
+  return useConfig.getState().claudeInstalado;
 }
 
 async function notificarSeEscondida(corpo: string) {
   const cfg = useConfig.getState();
   if (!cfg.notificarClaude || cfg.naoPerturbe) return;
-  const ilha = useIlha.getState();
-  if (ilha.estado === "expandida" && ilha.aba === "claude") return;
-  if (ilha.estado !== "escondida" && !(await frenteCobreAIlha())) return;
-  await notificarWindows(T.app.nome, corpo);
+  if (!document.hidden || typeof Notification === "undefined" || Notification.permission !== "granted") return;
+  new Notification(T.app.nome, { body: corpo });
 }
 
 function devolverAoTerminal(pedidoId: string) {
@@ -37,27 +33,12 @@ function reagir(e: EventoClaude) {
   const sessao = estado.sessoes[e.sessao];
   const projeto = sessao?.projeto ?? "";
   const silencio = useConfig.getState().naoPerturbe;
-  const ilha = useIlha.getState();
   switch (e.evento) {
     case "PermissionRequest": {
       const pedidoId = e.pedidoId;
       if (!pedidoId) return;
-      if (!abaLigada()) {
-        devolverAoTerminal(pedidoId);
-        return;
-      }
-      void frenteEmTelaCheia().then((cheia) => {
-        if (cheia) {
-          devolverAoTerminal(pedidoId);
-          return;
-        }
-        if (!useClaudeCode.getState().pedidos.some((p) => p.pedidoId === pedidoId)) return;
-        useClaudeCode.getState().focar(e.sessao);
-        void tocarSom("approval", "avisos");
-        void notificarSeEscondida(T.ilha.claude.notificacao.permissao(projeto));
-        const ilhaAgora = useIlha.getState();
-        if (ilhaAgora.estado === "escondida") ilhaAgora.definirEstado("compacta");
-      });
+      void notificarSeEscondida(T.ilha.claude.notificacao.permissao(projeto));
+      devolverAoTerminal(pedidoId);
       return;
     }
     case "Stop":
@@ -65,28 +46,32 @@ function reagir(e: EventoClaude) {
       estado.focar(e.sessao);
       void tocarSom("finish", "avisos");
       void notificarSeEscondida(T.ilha.claude.notificacao.terminou(projeto));
-      if (ilha.estado !== "expandida") ilha.revelar({ texto: T.ilha.claude.terminouAviso(projeto), tipo: "sucesso", marca: "claudecode", aba: "claude" }, 7000, "normal");
+      useInterface.getState().avisar(T.ilha.claude.terminouAviso(projeto));
       return;
     case "StopFailure":
       if (!abaLigada()) return;
       void tocarSom("error", "avisos");
       void notificarSeEscondida(T.ilha.claude.notificacao.erro(projeto));
-      ilha.revelar({ texto: T.ilha.claude.erroAviso(projeto), tipo: "alerta", marca: "claudecode", aba: "claude" }, 6000);
+      useInterface.getState().avisar(T.ilha.claude.erroAviso(projeto));
       return;
     case "NikoPedidoEncerrado": {
       const motivo = e.dados.motivo;
       if (!abaLigada() || (motivo !== "expirou" && motivo !== "cancelado")) return;
-      ilha.revelar({ texto: T.ilha.claude.pedidoEncerrado[motivo], tipo: "alerta", marca: "claudecode", aba: "claude" }, 6000);
+      useInterface.getState().avisar(T.ilha.claude.pedidoEncerrado[motivo]);
       return;
     }
     case "Notification":
       if (!abaLigada()) return;
       if (sessao?.estado === "esperando") {
         void tocarSom("question", "avisos");
-        ilha.revelar({ texto: T.ilha.claude.esperandoAviso(projeto), tipo: "info", marca: "claudecode", aba: "claude" }, 6000);
+        const texto = T.ilha.claude.esperandoAviso(projeto);
+        useInterface.getState().avisar(texto);
+        void notificarSeEscondida(texto);
       } else if (sessao?.estado === "limite") {
         void tocarSom("rate", "avisos");
-        ilha.revelar({ texto: T.ilha.claude.limiteAviso(projeto), tipo: "alerta", marca: "claudecode", aba: "claude" }, 6000);
+        const texto = T.ilha.claude.limiteAviso(projeto);
+        useInterface.getState().avisar(texto);
+        void notificarSeEscondida(texto);
       }
       return;
     default:

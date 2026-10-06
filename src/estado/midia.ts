@@ -124,10 +124,6 @@ export const useMidia = create<EstadoMidia>()((set, get) => {
   };
 });
 
-export function midiaAtivaNaIlha(s: Pick<EstadoMidia, "faixa" | "tocando">): boolean {
-  return Boolean(s.faixa) && s.tocando;
-}
-
 export function posicaoAtual(s: Pick<EstadoMidia, "tocando" | "posicao" | "lidoEm" | "faixa">, agora: number): number {
   const duracao = s.faixa?.duracao ?? 0;
   const bruto = s.tocando ? s.posicao + (agora - s.lidoEm) / 1000 : s.posicao;

@@ -45,13 +45,6 @@ export function usarAtalhos() {
           cfg.definir({ privacidade: !cfg.privacidade });
           return;
         }
-        if (tecla === "n") {
-          e.preventDefault();
-          const visivel = ui.sistemaAberto && !ui.sistemaMinimizado;
-          ui.definirSistema(visivel ? { sistemaMinimizado: true } : { sistemaAberto: true, sistemaMinimizado: false });
-          if (!visivel) ui.focarSistema();
-          return;
-        }
       }
 
       if (!e.ctrlKey || e.altKey) return;

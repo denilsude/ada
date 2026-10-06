@@ -3,7 +3,6 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { randomBytes } from "node:crypto";
 import { listarProvedores, salvarProvedor, removerProvedor, testarProvedor, conversar, validarMensagens, validarFerramentas } from "./ia";
 import { lerConsumo } from "./consumo";
-import { lerUltimaVersao } from "./atualizacoes";
 import { lerTudo, gravar, backupManual, zerarBanco } from "./banco";
 import { pedirMidia } from "./midia";
 import { pedirJanelas } from "./janelasWindows";
@@ -82,7 +81,6 @@ export const rotas: Connect.NextHandleFunction = async (req, res, proximo) => {
   const caminho = url.pathname.slice("/ponte".length);
 
   try {
-    if (caminho === "/atualizacao" && req.method === "GET") return responder(res, 200, await lerUltimaVersao());
     if (caminho === "/estado" && req.method === "GET") {
       return responder(res, 200, { disponivel: true, plataforma: process.platform, provedores: listarProvedores() });
     }

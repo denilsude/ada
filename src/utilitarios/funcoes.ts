@@ -1,4 +1,4 @@
-import { useConfig, type AbaIlha, type BlocoInicio } from "../estado/configuracoes";
+import { useConfig, type BlocoInicio } from "../estado/configuracoes";
 import type { CartaoConfirmacao, Rota } from "../tipos";
 import { T } from "../textos/textos";
 
@@ -7,7 +7,6 @@ export type Funcao = (typeof FUNCOES)[number];
 
 interface PartesDaFuncao {
   rota: Rota;
-  abasDaIlha: AbaIlha[];
   blocosDoInicio: BlocoInicio[];
   ferramentasIa: string[];
   areasDoBanco: string[];
@@ -18,7 +17,6 @@ interface PartesDaFuncao {
 export const PARTES: Record<Funcao, PartesDaFuncao> = {
   journal: {
     rota: "journal",
-    abasDaIlha: ["hoje", "habitos"],
     blocosDoInicio: ["hoje"],
     ferramentasIa: ["ler_tarefas", "criar_tarefa", "concluir_tarefa", "ler_habitos", "marcar_habito", "adicionar_compras"],
     areasDoBanco: ["tarefas", "habitos", "registros_habitos", "journal", "listas_compras"],
@@ -27,7 +25,6 @@ export const PARTES: Record<Funcao, PartesDaFuncao> = {
   },
   estudos: {
     rota: "estudos",
-    abasDaIlha: [],
     blocosDoInicio: ["revisoes"],
     ferramentasIa: ["ler_estudos", "listar_arquivos", "ler_arquivo"],
     areasDoBanco: ["areas_estudo", "materias", "paginas", "cartoes", "datas_estudo", "links"],
@@ -36,7 +33,6 @@ export const PARTES: Record<Funcao, PartesDaFuncao> = {
   },
   financas: {
     rota: "financas",
-    abasDaIlha: [],
     blocosDoInicio: ["financas"],
     ferramentasIa: ["ler_financas", "lancar_transacao"],
     areasDoBanco: ["contas", "transacoes", "categorias", "recorrentes", "metas_economia", "divisoes"],
@@ -45,7 +41,6 @@ export const PARTES: Record<Funcao, PartesDaFuncao> = {
   },
   metas: {
     rota: "metas",
-    abasDaIlha: [],
     blocosDoInicio: [],
     ferramentasIa: ["ler_metas"],
     areasDoBanco: ["metas", "pilares", "visao"],
@@ -54,7 +49,6 @@ export const PARTES: Record<Funcao, PartesDaFuncao> = {
   },
   calendario: {
     rota: "calendario",
-    abasDaIlha: ["calendario"],
     blocosDoInicio: [],
     ferramentasIa: ["ler_agenda", "criar_evento", "criar_lembrete"],
     areasDoBanco: ["eventos"],
@@ -77,10 +71,6 @@ function desligadaQueContem<K extends keyof PartesDaFuncao>(parte: K, valor: Par
 
 export function rotaLigada(rota: Rota, desligadas: readonly Funcao[] = funcoesDesligadas()): boolean {
   return !desligadas.some((f) => PARTES[f].rota === rota);
-}
-
-export function abaLigada(aba: AbaIlha, desligadas: readonly Funcao[] = funcoesDesligadas()): boolean {
-  return !desligadaQueContem("abasDaIlha", aba, desligadas);
 }
 
 export function blocoLigado(bloco: BlocoInicio, desligadas: readonly Funcao[] = funcoesDesligadas()): boolean {

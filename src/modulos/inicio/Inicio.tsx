@@ -389,7 +389,7 @@ function BlocoConexoes() {
   const irPara = useInterface((s) => s.irPara);
   const eventos = useComunicacao((s) => s.eventosConexao).slice(0, 8);
   const ativas = conexoes.filter((c) => c.ligada);
-  if (ativas.length === 0) return <Vazio titulo={T.ilha.semConexoes} acao={<Botao onClick={() => irPara("conexoes")}>{T.rotas.conexoes}</Botao>} />;
+  if (ativas.length === 0) return <Vazio titulo={T.conexoes.semDados} acao={<Botao onClick={() => irPara("conexoes")}>{T.rotas.conexoes}</Botao>} />;
   return (
     <div className="coluna" style={{ gap: 14 }}>
       <div className="lista">

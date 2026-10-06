@@ -1,6 +1,4 @@
 import { AnimatePresence } from "motion/react";
-import { Ilha } from "../ilha/Ilha";
-import { Dock } from "../dock/Dock";
 import { JanelaSistema } from "../sistema/JanelaSistema";
 import { JanelaConexao } from "../../modulos/conexoes/JanelaConexao";
 import { BuscaGlobal } from "../../modulos/busca/BuscaGlobal";
@@ -29,8 +27,6 @@ export function AreaDeTrabalho() {
           <JanelaConexao key={j.id} janela={j} />
         ))}
       </AnimatePresence>
-      <Ilha />
-      <Dock />
       <BuscaGlobal />
       <CapturaRapida />
       {!primeira && <PrimeiraExecucao />}

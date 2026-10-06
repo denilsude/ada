@@ -25,7 +25,7 @@ export function capturar(tipo: TipoCaptura, texto: string): ResultadoComando {
     const rotina = useRotina.getState();
     const atual = rotina.dias[hoje] ?? DIA_VAZIO;
     rotina.atualizarDia(hoje, { diario: `${atual.diario}<p>${escaparHtml(limpo.slice(0, 1000))}</p>` });
-    return { agente: "organizador", resposta: T.ilha.notaSalva, ok: true };
+    return { agente: "organizador", resposta: T.captura.salvo, ok: true };
   }
   return executarComando(`/${tipo} ${limpo}`);
 }

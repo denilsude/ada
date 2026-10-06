@@ -8,7 +8,7 @@ import { mensagemDeLeitura } from "../utilitarios/leitorDeArquivos";
 import { tocarSom } from "../ponte/sons";
 import { T } from "../textos/textos";
 import type { AgenteId } from "../tipos";
-import { TrajetoDoArquivo } from "../janelas/ilha/animacoes/TrajetoDoArquivo";
+import { TrajetoDoArquivo } from "./TrajetoDoArquivo";
 
 export interface AnexoEmAndamento {
   id: string;

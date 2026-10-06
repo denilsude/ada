@@ -18,7 +18,7 @@ import { T } from "./textos/textos";
 document.documentElement.dataset.tema = "claro";
 
 async function iniciar() {
-  if (JANELA === "ilha" || JANELA === "dock") document.documentElement.classList.add("janela-sobreposta");
+  if (NATIVO && JANELA !== "sistema") return;
   await prepararPonte();
   desviarLinksExternos();
   let modo = "local";
@@ -34,12 +34,11 @@ async function iniciar() {
     raiz.innerHTML = `<div class="falha-ponte"><h1>${T.app.ponteFalhou}</h1><p>${T.app.ponteFalhouDica}</p></div>`;
     return;
   }
-  if (JANELA === "ilha" || JANELA === "dock") document.documentElement.classList.add("janela-sobreposta");
   let Raiz: () => React.ReactElement;
   if (!NATIVO) Raiz = (await import("./janelas/area-de-trabalho/AreaDeTrabalho")).AreaDeTrabalho;
   else {
     const apps = await import("./desktop/Aplicativos");
-    Raiz = JANELA === "ilha" ? apps.AppIlha : JANELA === "dock" ? apps.AppDock : apps.AppSistema;
+    Raiz = apps.AppSistema;
   }
   createRoot(raiz).render(
     <StrictMode>

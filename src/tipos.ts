@@ -20,7 +20,6 @@ export type Rota =
   | "financas"
   | "metas"
   | "calendario"
-  | "atualizacao"
   | "ia"
   | "consumo"
   | "conquistas"
@@ -406,7 +405,6 @@ export interface Conexao {
   status: StatusConexao;
   ultimaAtualizacao?: string;
   resumo: string;
-  fixadaNaIlha: boolean;
 }
 
 export interface UsoIa {

@@ -1,7 +1,5 @@
 import { useEffect } from "react";
 import { AnimatePresence } from "motion/react";
-import { Ilha } from "../janelas/ilha/Ilha";
-import { Dock } from "../janelas/dock/Dock";
 import { JanelaSistema } from "../janelas/sistema/JanelaSistema";
 import { JanelaConexao } from "../modulos/conexoes/JanelaConexao";
 import { BuscaGlobal } from "../modulos/busca/BuscaGlobal";
@@ -12,20 +10,16 @@ import { useConfig } from "../estado/configuracoes";
 import { usarTema } from "../janelas/area-de-trabalho/usarTema";
 import { usarAtalhos } from "../janelas/area-de-trabalho/usarAtalhos";
 import { useServicos } from "../servicos/servicos";
-import { janelaAtual, ouvirComandos, ouvirEvento, sincronizarInicioComWindows } from "./desktop";
+import { ouvirComandos, ouvirEvento } from "./desktop";
 import { usarSincronia } from "./sincronia";
 
 export function AppSistema() {
   usarTema();
   usarAtalhos();
   usarSincronia();
+  useServicos();
   const janelas = useInterface((s) => s.janelasConexao);
   const primeira = useConfig((s) => s.primeiraExecucaoFeita);
-  const iniciarComWindows = useConfig((s) => s.iniciarComWindows);
-
-  useEffect(() => {
-    void sincronizarInicioComWindows(iniciarComWindows);
-  }, [iniciarComWindows]);
 
   useEffect(
     () =>
@@ -56,36 +50,6 @@ export function AppSistema() {
       <BuscaGlobal />
       <CapturaRapida />
       {!primeira && <PrimeiraExecucao />}
-    </div>
-  );
-}
-
-function usarMostrarAoMontar() {
-  useEffect(() => {
-    const t = window.setTimeout(() => void janelaAtual().then((j) => j.show()), 120);
-    return () => window.clearTimeout(t);
-  }, []);
-}
-
-export function AppIlha() {
-  usarMostrarAoMontar();
-  usarTema();
-  usarSincronia();
-  useServicos();
-  return (
-    <div className="area-sobreposta">
-      <Ilha />
-    </div>
-  );
-}
-
-export function AppDock() {
-  usarMostrarAoMontar();
-  usarTema();
-  usarSincronia();
-  return (
-    <div className="area-sobreposta">
-      <Dock />
     </div>
   );
 }

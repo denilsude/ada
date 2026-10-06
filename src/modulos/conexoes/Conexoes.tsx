@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Maximize2, KeyRound, Pin, PinOff, RefreshCw, TriangleAlert, ShieldCheck, ExternalLink, Plug } from "lucide-react";
+import { Maximize2, KeyRound, RefreshCw, TriangleAlert, ShieldCheck, ExternalLink, Plug } from "lucide-react";
 import { CabecalhoAba } from "../../componentes/CabecalhoAba";
 import { Cartao, Botao, Pilulas, AvisoFaixa, Modal, Campo, LinhaAlternador } from "../../componentes/basicos";
 import { Marca } from "../../marcas/Marca";
@@ -44,7 +44,6 @@ function GuiaConexao({ servico }: { servico: ServicoId }) {
 function Configurar({ servico, aoFechar }: { servico: ServicoId | null; aoFechar: () => void }) {
   const conexao = useComunicacao((s) => s.conexoes.find((c) => c.id === servico));
   const atualizar = useComunicacao((s) => s.atualizarConexao);
-  const conexoes = useComunicacao((s) => s.conexoes);
   const avisar = useInterface((s) => s.avisar);
   const [chave, setChave] = useState("");
   const [url, setUrl] = useState("");
@@ -58,8 +57,6 @@ function Configurar({ servico, aoFechar }: { servico: ServicoId | null; aoFechar
   }, [servico]);
   if (!servico || !conexao) return <Modal aberto={false} titulo="" aoFechar={aoFechar}>{null}</Modal>;
   const nome = T.conexoes.servicos[servico].nome;
-  const fixadas = conexoes.filter((c) => c.fixadaNaIlha).length;
-
   const salvar = async () => {
     if (servico === "gmail" ? !/\.apps\.googleusercontent\.com$/.test(clienteId.trim()) : false) {
       setErro(T.conexoes.clienteIdInvalido);
@@ -144,13 +141,6 @@ function Configurar({ servico, aoFechar }: { servico: ServicoId | null; aoFechar
           desativado={!conexao.chaveSalva}
           aoMudar={(v) => atualizar(servico, { ligada: v, status: v ? "conectado" : "pausado" })}
         />
-        <LinhaAlternador
-          rotulo={T.conexoes.fixarNaIlha}
-          dica={T.conexoes.limiteIlha}
-          ligado={conexao.fixadaNaIlha}
-          desativado={!conexao.fixadaNaIlha && fixadas >= 4}
-          aoMudar={(v) => atualizar(servico, { fixadaNaIlha: v })}
-        />
         <Campo id="cx-int" rotulo={T.conexoes.intervalo}>
           <select id="cx-int" className="seletor" value={conexao.intervalo} onChange={(e) => atualizar(servico, { intervalo: Number(e.target.value) })}>
             {INTERVALOS.map((s) => <option key={s} value={s}>{T.conexoes.segundos(s)}</option>)}
@@ -167,7 +157,6 @@ export default function Conexoes() {
   const parametros = useInterface((s) => s.parametros);
   const conexoes = useComunicacao((s) => s.conexoes);
   const eventos = useComunicacao((s) => s.eventosConexao);
-  const atualizar = useComunicacao((s) => s.atualizarConexao);
   const abrirJanela = useInterface((s) => s.abrirJanelaConexao);
   const pausadas = useConfig((s) => s.pausarConexoes);
   const definir = useConfig((s) => s.definir);
@@ -225,17 +214,16 @@ export default function Conexoes() {
               <div className="linha" style={{ marginTop: 12, flexWrap: "wrap" }}>
                 {c.chaveSalva ? (
                   <>
-                    <Botao pequeno variante="primario" icone={<Maximize2 size={13} />} onClick={() => abrirJanela(id)}>{T.ilha.abrirConexao}</Botao>
+                    <Botao pequeno variante="primario" icone={<Maximize2 size={13} />} onClick={() => abrirJanela(id)}>{T.conexoes.abrirJanela}</Botao>
                     <Botao pequeno icone={<KeyRound size={13} />} onClick={() => setConfigurando(id)}>{T.janelaConexao.configurar}</Botao>
                   </>
                 ) : (
                   <Botao pequeno variante="primario" icone={<Plug size={13} />} onClick={() => setConfigurando(id)}>{T.conexoes.conectar}</Botao>
                 )}
                 {c.chaveSalva && (
-                  <>
-                    <Botao
-                      pequeno
-                      soIcone
+                  <Botao
+                    pequeno
+                    soIcone
                       variante="fantasma"
                       icone={<RefreshCw size={13} />}
                       aria-label={T.conexoes.atualizarAgora}
@@ -243,19 +231,8 @@ export default function Conexoes() {
                       onClick={() => {
                         void tocarSom("search");
                         void atualizarConexaoAgora(id);
-                      }}
-                    />
-                    <Botao
-                      pequeno
-                      soIcone
-                      variante="fantasma"
-                      icone={c.fixadaNaIlha ? <PinOff size={13} /> : <Pin size={13} />}
-                      aria-label={T.conexoes.fixarNaIlha}
-                      title={T.conexoes.fixarNaIlha}
-                      disabled={!c.fixadaNaIlha && conexoes.filter((x) => x.fixadaNaIlha).length >= 4}
-                      onClick={() => atualizar(id, { fixadaNaIlha: !c.fixadaNaIlha })}
-                    />
-                  </>
+                    }}
+                  />
                 )}
               </div>
             </Cartao>

@@ -2,23 +2,13 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Sparkles } from "lucide-react";
 import { useInterface } from "../../estado/interface";
-import { useConfig, type ModoBorda, type Tema } from "../../estado/configuracoes";
+import { useConfig, type Tema } from "../../estado/configuracoes";
 import { Personagem } from "../../personagens/Personagem";
 import { AGENTES } from "../../estado/agentes";
 import { Botao, Campo, Segmentado, Tecla } from "../../componentes/basicos";
 import { T } from "../../textos/textos";
 import { tocarSom } from "../../ponte/sons";
 import { EditorFoto } from "../../componentes/FotoPerfil";
-
-function PreviaDoModo({ modo }: { modo: ModoBorda }) {
-  return (
-    <div className="previa-modo" data-modo={modo} role="img" aria-label={`${T.primeira.previaModo}: ${T.configuracoes.modos[modo]}`}>
-      <span className="previa-modo-janela" />
-      <span className="previa-modo-ilha" />
-      <span className="previa-modo-cursor" />
-    </div>
-  );
-}
 
 export function PrimeiraExecucao() {
   const cfg = useConfig();
@@ -107,31 +97,6 @@ export function PrimeiraExecucao() {
               </div>
             )}
             {passo === 2 && (
-              <div className="formulario">
-                <h2 className="titulo-secao">{T.primeira.ilha}</h2>
-                <div className="campo-grupo">
-                  <span className="campo-rotulo">{T.configuracoes.secoes.ilha}</span>
-                  <Segmentado<ModoBorda>
-                    rotulo={T.configuracoes.secoes.ilha}
-                    valor={cfg.ilha.modo}
-                    aoMudar={(modo) => cfg.definirIlha({ modo })}
-                    opcoes={(["fixo", "esconder", "inteligente"] as ModoBorda[]).map((m) => ({ valor: m, rotulo: T.configuracoes.modos[m] }))}
-                  />
-                  <PreviaDoModo modo={cfg.ilha.modo} />
-                  <span className="campo-dica">{T.configuracoes.modosDica[cfg.ilha.modo]}</span>
-                </div>
-                <div className="campo-grupo">
-                  <span className="campo-rotulo">{T.configuracoes.secoes.dock}</span>
-                  <Segmentado<ModoBorda>
-                    rotulo={T.configuracoes.secoes.dock}
-                    valor={cfg.dock.modo}
-                    aoMudar={(modo) => cfg.definir({ dock: { ...cfg.dock, modo } })}
-                    opcoes={(["fixo", "esconder", "inteligente"] as ModoBorda[]).map((m) => ({ valor: m, rotulo: T.configuracoes.modos[m] }))}
-                  />
-                </div>
-              </div>
-            )}
-            {passo === 3 && (
               <>
                 <h2 className="titulo-secao">{T.primeira.ia}</h2>
                 <p className="texto-2">{T.primeira.iaTexto}</p>
@@ -150,7 +115,7 @@ export function PrimeiraExecucao() {
                 <p className="texto-2">{T.primeira.dadosTexto}</p>
               </>
             )}
-            {passo === 4 && (
+            {passo === 3 && (
               <>
                 <h2 className="titulo-secao">{T.primeira.pronto}</h2>
                 <p className="texto-2">{T.primeira.prontoTexto}</p>

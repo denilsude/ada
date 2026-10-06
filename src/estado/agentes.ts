@@ -4,7 +4,7 @@ import { armazenamento, chave } from "../ponte/armazenamento";
 import type { AgenteId, Alerta, Atividade, EstadoAgente, Rota, ServicoId } from "../tipos";
 import { gerarId } from "../utilitarios/basicos";
 import { tocarSom, type NomeSom } from "../ponte/sons";
-import { useIlha } from "./ilha";
+import { useInterface } from "./interface";
 
 export const AGENTES: AgenteId[] = ["organizador", "tutor", "operador", "java"];
 
@@ -29,7 +29,7 @@ interface EstadoAgentes {
   relogio: number;
   registrar: (agente: AgenteId, texto: string) => void;
   trabalhar: (agente: AgenteId, texto: string, duracaoMs?: number) => Promise<void>;
-  alertar: (agente: AgenteId, texto: string, rota?: Rota, som?: NomeSom, servico?: ServicoId, urgente?: boolean) => string;
+  alertar: (agente: AgenteId, texto: string, rota?: Rota, som?: NomeSom, servico?: ServicoId) => string;
   resolverAlerta: (id: string) => void;
   marcarVistos: () => void;
   falhar: (agente: AgenteId, texto: string) => void;
@@ -91,7 +91,7 @@ export const useAgentes = create<EstadoAgentes>()(
           void tocarSom("finish", "personagens");
           setTimeout(() => set({ relogio: Date.now() }), 3100);
         },
-        alertar: (agente, texto, rota, som = "question", servico, urgente = false) => {
+        alertar: (agente, texto, rota, som = "question", servico) => {
           const repetido = get().alertas.find((a) => a.agenteId === agente && a.texto === texto);
           if (repetido) return repetido.id;
           const id = gerarId();
@@ -101,7 +101,7 @@ export const useAgentes = create<EstadoAgentes>()(
           }));
           mudarSinal(agente, (x) => x);
           void tocarSom(som, "avisos");
-          useIlha.getState().revelar({ texto, tipo: "alerta", agente, aba: "avisos" }, urgente ? 6000 : 4200, urgente ? "alta" : "normal");
+          useInterface.getState().avisar(texto);
           window.setTimeout(() => set({ relogio: Date.now() }), ALERTA_FRESCO + 200);
           return id;
         },

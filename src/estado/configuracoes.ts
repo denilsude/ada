@@ -3,17 +3,9 @@ import { persist } from "zustand/middleware";
 import { armazenamento, chave } from "../ponte/armazenamento";
 import type { AgenteId, CartaoConfirmacao, Rota } from "../tipos";
 import type { CategoriaSom } from "../ponte/sons";
-import { FUNDO_DESTAQUE, hexValido, misturar } from "../utilitarios/cores";
-
-const DESTAQUE_ESCURO_PADRAO = "#a78bfa";
 
 export type Tema = "claro" | "escuro" | "sistema";
 export type Paleta = "padrao" | "areia" | "grafite" | "floresta" | "oceano";
-export type ModoBorda = "fixo" | "esconder" | "inteligente";
-export type AbaIlha = "calendario" | "hoje" | "captura" | "midia" | "foco" | "habitos" | "chat" | "conexoes" | "avisos" | "claude";
-
-export const ABAS_ILHA: AbaIlha[] = ["calendario", "claude", "conexoes", "chat", "hoje", "captura", "midia", "foco", "habitos", "avisos"];
-export type RepousoIlha = "nada" | "relogio" | "midia" | "agente";
 export type BlocoInicio =
   | "time" | "hoje" | "foco" | "financas" | "conexoes" | "revisoes" | "consumo" | "mapa" | "conquistas";
 
@@ -33,7 +25,6 @@ export const BARRA_PADRAO: ItemBarra[] = [
   { rota: "financas", visivel: true },
   { rota: "metas", visivel: true },
   { rota: "calendario", visivel: true },
-  { rota: "atualizacao", visivel: true },
   { rota: "ia", visivel: true },
   { rota: "consumo", visivel: true },
   { rota: "conquistas", visivel: true },
@@ -49,7 +40,6 @@ export const GRUPO_DA_ROTA: Record<Rota, "principal" | "organizacao" | "ferramen
   financas: "organizacao",
   metas: "organizacao",
   calendario: "organizacao",
-  atualizacao: "organizacao",
   ia: "ferramentas",
   consumo: "ferramentas",
   conquistas: "ferramentas",
@@ -68,35 +58,10 @@ export const BLOCOS_INICIO_PADRAO: { id: BlocoInicio; visivel: boolean }[] = [
   { id: "conquistas", visivel: true },
 ];
 
-export interface AtalhoDock {
-  id: string;
-  nome: string;
-  url: string;
-}
-
-export const FUNDO_PADRAO_DAS_BORDAS = "#232428";
-
-export interface ConfigIlha {
-  ativa: boolean;
-  modo: ModoBorda;
-  blocos: Record<AbaIlha, boolean>;
-  ordemAbas: AbaIlha[];
-  repouso: RepousoIlha;
-  tamanho: "pequena" | "media" | "grande";
-  fundo: string;
-  opacidade: number;
-  fechamentoSeg: number;
-  abrirHover: boolean;
-  esconderSeg: number;
-  notificacoes: "todas" | "importantes" | "nenhuma";
-  laterais: boolean;
-}
-
 export interface Configuracoes {
   nome: string;
   foto: string | null;
   viradaAs4h: boolean;
-  iniciarComWindows: boolean;
   tema: Tema;
   paleta: Paleta;
   destaque: string | null;
@@ -107,8 +72,6 @@ export interface Configuracoes {
   barraRecolhida: boolean;
   gruposFechados: string[];
   blocosInicio: { id: BlocoInicio; visivel: boolean }[];
-  ilha: ConfigIlha;
-  dock: { ativo: boolean; modo: ModoBorda; favoritos: Rota[]; atalhos: AtalhoDock[]; ampliar: boolean; fundo: string; opacidade: number };
   pomodoro: { foco: number; curta: number; longa: number; ciclos: number; autoProxima: boolean; tique: boolean };
   agua: { meta: number; copo: number };
   sons: { ligado: boolean; volume: number; categorias: Record<CategoriaSom, boolean> };
@@ -120,8 +83,6 @@ export interface Configuracoes {
   nuncaFinanceiro: boolean;
   pausarConexoes: boolean;
   conquistasAtivas: boolean;
-  esconderTelaCheia: boolean;
-  appsEsconder: string;
   receberStripe: boolean;
   primeiraExecucaoFeita: boolean;
   notificarClaude: boolean;
@@ -133,7 +94,6 @@ export const CONFIG_PADRAO: Configuracoes = {
   nome: "",
   foto: null,
   viradaAs4h: false,
-  iniciarComWindows: true,
   tema: "claro",
   paleta: "padrao",
   destaque: null,
@@ -144,22 +104,6 @@ export const CONFIG_PADRAO: Configuracoes = {
   barraRecolhida: false,
   gruposFechados: [],
   blocosInicio: BLOCOS_INICIO_PADRAO,
-  ilha: {
-    ativa: true,
-    modo: "inteligente",
-    blocos: { calendario: true, hoje: true, captura: true, midia: true, foco: true, habitos: true, chat: true, conexoes: true, avisos: true, claude: true },
-    ordemAbas: ABAS_ILHA,
-    repouso: "agente",
-    tamanho: "media",
-    fundo: FUNDO_PADRAO_DAS_BORDAS,
-    opacidade: 1,
-    fechamentoSeg: 15,
-    abrirHover: false,
-    esconderSeg: 4,
-    notificacoes: "importantes",
-    laterais: true,
-  },
-  dock: { ativo: true, modo: "inteligente", favoritos: ["chat", "journal", "estudos", "financas", "calendario"], atalhos: [], ampliar: true, fundo: FUNDO_PADRAO_DAS_BORDAS, opacidade: 1 },
   pomodoro: { foco: 25, curta: 5, longa: 15, ciclos: 4, autoProxima: false, tique: false },
   agua: { meta: 2000, copo: 250 },
   sons: {
@@ -180,8 +124,6 @@ export const CONFIG_PADRAO: Configuracoes = {
   nuncaFinanceiro: true,
   pausarConexoes: false,
   conquistasAtivas: true,
-  esconderTelaCheia: true,
-  appsEsconder: "",
   receberStripe: false,
   primeiraExecucaoFeita: false,
   notificarClaude: false,
@@ -191,7 +133,6 @@ export const CONFIG_PADRAO: Configuracoes = {
 
 interface AcoesConfig {
   definir: (parcial: Partial<Configuracoes>) => void;
-  definirIlha: (parcial: Partial<ConfigIlha>) => void;
   restaurar: () => void;
 }
 
@@ -200,63 +141,29 @@ export const useConfig = create<Configuracoes & AcoesConfig>()(
     (set) => ({
       ...CONFIG_PADRAO,
       definir: (parcial) => set(parcial),
-      definirIlha: (parcial) => set((s) => ({ ilha: { ...s.ilha, ...parcial } })),
       restaurar: () => set({ ...CONFIG_PADRAO, primeiraExecucaoFeita: true }),
     }),
     {
       name: chave("configuracoes"),
       storage: armazenamento,
-      version: 9,
-      migrate: (salvo, versao) => {
-        const s = (salvo ?? {}) as Partial<Configuracoes>;
-        if (versao < 2) {
-          if (s.ilha && s.ilha.esconderSeg === 60) s.ilha = { ...s.ilha, esconderSeg: 4 };
-          if (s.dock && s.dock.modo === "fixo") s.dock = { ...s.dock, modo: "inteligente" };
-        }
-        if (versao < 3 && s.ilha?.ordemAbas) s.ilha = { ...s.ilha, ordemAbas: ["conexoes", ...s.ilha.ordemAbas.filter((a) => a !== "conexoes")] };
-        if (versao < 4 && s.ilha) {
-          const antigo = s.ilha as Configuracoes["ilha"] & { blocos: Record<string, boolean> };
-          const ordem = (antigo.ordemAbas as string[] | undefined) ?? [];
-          const semChat = ordem.filter((a) => a !== "revisao" && a !== "chat");
-          const posicao = Math.min(semChat.indexOf("conexoes") + 1, semChat.length);
-          semChat.splice(posicao < 0 ? 0 : posicao, 0, "chat");
-          const { revisao: _revisao, ...blocos } = antigo.blocos ?? {};
-          s.ilha = { ...antigo, ordemAbas: semChat as AbaIlha[], blocos: { ...blocos, chat: true } as Configuracoes["ilha"]["blocos"] };
-        }
-        if (versao < 5) {
-          const corAntiga = (s.ilha as { cor?: string } | undefined)?.cor;
-          const fundo = corAntiga === "destaque" ? FUNDO_DESTAQUE : FUNDO_PADRAO_DAS_BORDAS;
-          if (s.ilha) {
-            const { cor: _cor, ...ilha } = s.ilha as Configuracoes["ilha"] & { cor?: string };
-            s.ilha = { ...ilha, modo: "inteligente", fundo, opacidade: 1 };
-          }
-          if (s.dock) s.dock = { ...s.dock, modo: "inteligente", fundo, opacidade: 1 };
-        }
-        if (versao < 6 && s.ilha) {
-          const ordem = ((s.ilha.ordemAbas as string[] | undefined) ?? []).filter((a) => a !== "time" && a !== "calendario");
-          const { time: _time, ...blocos } = (s.ilha.blocos ?? {}) as Record<string, boolean>;
-          s.ilha = { ...s.ilha, ordemAbas: ["calendario", ...ordem] as AbaIlha[], blocos: { ...blocos, calendario: true } as Configuracoes["ilha"]["blocos"] };
-        }
-        if (versao < 7) {
-          const destaque = s.destaque && hexValido(s.destaque) ? s.destaque : DESTAQUE_ESCURO_PADRAO;
-          const congelar = (fundo: string | undefined) => (fundo === FUNDO_DESTAQUE ? misturar(destaque, "#000000", 0.82) : fundo);
-          if (s.ilha) s.ilha = { ...s.ilha, fundo: congelar(s.ilha.fundo) ?? FUNDO_PADRAO_DAS_BORDAS };
-          if (s.dock) s.dock = { ...s.dock, fundo: congelar(s.dock.fundo) ?? FUNDO_PADRAO_DAS_BORDAS };
-          if (s.ilha) {
-            const { sistema: _sistema, ...blocos } = (s.ilha.blocos ?? {}) as Record<string, boolean>;
-            s.ilha = { ...s.ilha, ordemAbas: ((s.ilha.ordemAbas as string[] | undefined) ?? []).filter((a) => a !== "sistema") as AbaIlha[], blocos: blocos as Configuracoes["ilha"]["blocos"] };
-          }
-        }
-        if (versao < 8 && s.ilha) s.ilha = { ...s.ilha, blocos: { ...(s.ilha.blocos ?? {}), claude: true } as Configuracoes["ilha"]["blocos"] };
-        if (versao < 9 && s.ilha) {
-          const { agenda: _agenda, ...blocos } = (s.ilha.blocos ?? {}) as Record<string, boolean>;
-          s.ilha = { ...s.ilha, ordemAbas: ((s.ilha.ordemAbas as string[] | undefined) ?? []).filter((a) => a !== "agenda") as AbaIlha[], blocos: blocos as Configuracoes["ilha"]["blocos"] };
-        }
+      version: 10,
+      migrate: (salvo) => {
+        const { ilha: _ilha, dock: _dock, iniciarComWindows: _iniciarComWindows, esconderTelaCheia: _esconderTelaCheia, appsEsconder: _appsEsconder, ...dados } =
+          (salvo ?? {}) as Record<string, unknown>;
+        const s = dados as Partial<Configuracoes>;
         if (s.ia) s.ia = { ...s.ia, reservas: s.ia.reservas ?? [], modelos: s.ia.modelos ?? (s.ia.provedorId && s.ia.modelo ? { [s.ia.provedorId]: s.ia.modelo } : {}) };
         return s as Configuracoes & AcoesConfig;
       },
       merge: (persistido, atual) => {
-        const salvo = (persistido ?? {}) as Partial<Configuracoes>;
+        const {
+          ilha: _ilha,
+          dock: _dock,
+          iniciarComWindows: _iniciarComWindows,
+          esconderTelaCheia: _esconderTelaCheia,
+          appsEsconder: _appsEsconder,
+          ...dadosSalvos
+        } = (persistido ?? {}) as Record<string, unknown>;
+        const salvo = dadosSalvos as Partial<Configuracoes>;
         const barraSalva = Array.isArray(salvo.barraLateral) ? salvo.barraLateral.filter((i) => BARRA_PADRAO.some((p) => p.rota === i.rota)) : BARRA_PADRAO;
         const barraLateral = [...barraSalva];
         BARRA_PADRAO.forEach((item, i) => {
@@ -269,16 +176,6 @@ export const useConfig = create<Configuracoes & AcoesConfig>()(
           ...atual,
           ...salvo,
           barraLateral,
-          ilha: {
-            ...CONFIG_PADRAO.ilha,
-            ...salvo.ilha,
-            blocos: { ...CONFIG_PADRAO.ilha.blocos, ...salvo.ilha?.blocos },
-            ordemAbas: [
-              ...(salvo.ilha?.ordemAbas ?? []).filter((a) => ABAS_ILHA.includes(a)),
-              ...ABAS_ILHA.filter((a) => !(salvo.ilha?.ordemAbas ?? []).includes(a)),
-            ],
-          },
-          dock: { ...CONFIG_PADRAO.dock, ...salvo.dock },
           pomodoro: { ...CONFIG_PADRAO.pomodoro, ...salvo.pomodoro },
           agua: { ...CONFIG_PADRAO.agua, ...salvo.agua },
           sons: { ...CONFIG_PADRAO.sons, ...salvo.sons },
